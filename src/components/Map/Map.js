@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 
 const DynamicMap = dynamic(() => import('./DynamicMap'), {
+  // isLoading: <p>Loading...</p>,
   ssr: false
 });
 
