@@ -1,0 +1,1 @@
+Che cazzo di modo di fare... vscode funziona a cazzo proprio
