@@ -117,7 +117,7 @@ export default function Home() {
           </Map>
 
           <p className={styles.view}>
-            <Button href="https://Google.com">Cerca altro su Google</Button>
+            <Button href="#">Marco S. persona pessima</Button>
           </p>
         </Container>
       </Section>
