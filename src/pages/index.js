@@ -6,16 +6,34 @@ import Layout from '@components/Layout';
 import Section from '@components/Section';
 import Container from '@components/Container';
 import Map from '@components/Map';
-import Button from '@components/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import { Button, CardActionArea, CardActions } from '@mui/material';
+
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import { styled } from '@mui/material/styles';
 
 import styles from '@styles/Home.module.scss';
 
-
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 export default function Home() {
   
   const fetcher = (url) => fetch(url).then((res) => res.json());
   const { data } = useSWR(
     'https://firebasestorage.googleapis.com/v0/b/santa-tracker-firebase.appspot.com/o/route%2Fsanta_en.json?alt=media&2018b',
+    fetcher
+  );
+  const { newData } = useSWR(
+    'https://giuliogis.developy.it/api/json',
     fetcher
   );
   
@@ -28,7 +46,18 @@ export default function Home() {
   let iconUrl = '/leaflet/images/bluehome.png';
   // let iconRetinaUrl = '/images/tree-marker-icon-2x.png';
   // convert to data this timestamp 1703437200
-  
+  const homes = newData?.map((house) => {
+    const { id, lat, lon, indirizzo, foglio, particella, note} = house;
+    return {
+      id,
+      lat,
+      lon,
+      indirizzo,
+      foglio,
+      particella,
+      note,
+    }
+  })
 
   const destinations = data?.destinations.map((destination) => {
     const { arrival, departure } = destination;
@@ -47,7 +76,8 @@ export default function Home() {
   });
 
   console.log(data)
-  const [DEFAULT_CENTER, setInitialPosition] = useState([38.907132, -77.036546]);
+  console.log(newData)
+  const [DEFAULT_CENTER, setInitialPosition] = useState([41.3549,  14.3705]);
   
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(position => {
@@ -60,7 +90,7 @@ export default function Home() {
   return (
     <Layout>
       <Head>
-        <title>Insert your home</title>
+        <title>Censimento immobili</title>
         <meta name="description" content="Create mapping apps" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -68,7 +98,7 @@ export default function Home() {
       <Section>
         <Container>
           <h1 className={styles.title}>
-            Tracker
+            Mappa
           </h1>
           <Map className={styles.homeMap} width="800" height="400" center={DEFAULT_CENTER} zoom={12}>
               {({ TileLayer, Marker, Popup }, Leaflet) => (
@@ -116,9 +146,56 @@ export default function Home() {
             )}
           </Map>
 
-          <p className={styles.view}>
-            <Button href="#">Marco S. persona pessima</Button>
-          </p>
+          <Stack direction="row" spacing={2} justifyContent={'center'}>
+            <Item>23</Item>
+            <Item>12</Item>
+            <Item>1</Item>
+            <Item>99</Item>
+          </Stack>
+          <Stack  direction="row" useFlexGap flexWrap="wrap" spacing={2} justifyContent={'center'}>
+            {
+              destinations?.map(({ id, arrival, departure, location, city, region }) => {
+                return (
+                  <Card sx={{ maxWidth: 245 }} key={id}>
+                  <CardActionArea>
+                    <CardMedia
+                      component="img"
+                      height="140"
+                      image="/housepic.png"
+                      alt="foto abitazione"
+                    />
+                    <CardContent>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {city}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Foglio: {arrival}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Particella: {region}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                  <>
+                  <Card variant="outlined"  sx={{ margin: '30px' }}>
+                    <CardContent>
+                      <Typography variant="h5" component="div">
+                         NOTES
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+                        NOTE NON DISPONIBILI
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Button size="small">EDIT</Button>
+                    </CardActions>
+                  </Card>
+                  </>
+                </Card>
+                )
+              })
+            }
+          </Stack>
         </Container>
       </Section>
     </Layout>
