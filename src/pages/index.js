@@ -25,17 +25,26 @@ const Item = styled(Paper)(({ theme }) => ({
   textAlign: 'center',
   color: theme.palette.text.secondary,
 }));
+
+const fetcher = (url) => fetch(url).then((res) => res.json());
 export default function Home() {
   
-  const fetcher = (url) => fetch(url).then((res) => res.json());
-  const { data } = useSWR(
+  const [newData, setNewData] = useState([]);
+  const [data, setData] = useState([]);
+
+   const { data: santaData } = useSWR(
     'https://firebasestorage.googleapis.com/v0/b/santa-tracker-firebase.appspot.com/o/route%2Fsanta_en.json?alt=media&2018b',
     fetcher
   );
-  const { newData } = useSWR(
+  const { data: jsonData } = useSWR(
     'https://giuliogis.developy.it/api/json',
     fetcher
   );
+
+  useEffect(() => {
+    setData(santaData);
+    setNewData(jsonData);
+  }, [santaData, jsonData]);
   
   // const currentYear = new Date(Date.now()).getFullYear();
   // const currentDate = new Date(Date.now());
@@ -59,7 +68,7 @@ export default function Home() {
     }
   })
 
-  const destinations = data?.destinations.map((destination) => {
+  const destinations = data?.destinations?.map((destination) => {
     const { arrival, departure } = destination;
   
     const arrivalDate = new Date(arrival);
