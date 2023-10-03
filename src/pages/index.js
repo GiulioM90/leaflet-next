@@ -29,33 +29,29 @@ const Item = styled(Paper)(({ theme }) => ({
 const fetcher = (url) => fetch(url).then((res) => res.json());
 export default function Home() {
   
-  const [newData, setNewData] = useState([]);
+  const DEFAULT_CENTER =[40.851775,  14.268124];
+
   const [data, setData] = useState([]);
 
-   const { data: santaData } = useSWR(
-    'https://firebasestorage.googleapis.com/v0/b/santa-tracker-firebase.appspot.com/o/route%2Fsanta_en.json?alt=media&2018b',
-    fetcher
-  );
-  const { data: jsonData } = useSWR(
+   const { data: jsonData } = useSWR(
     'https://giuliogis.developy.it/api/json',
     fetcher
   );
 
   useEffect(() => {
-    setData(santaData);
-    setNewData(jsonData);
-  }, [santaData, jsonData]);
-  
+    setData(jsonData);
+  }, [jsonData]);
+
   // const currentYear = new Date(Date.now()).getFullYear();
   // const currentDate = new Date(Date.now());
-  const currentYear = new Date(1703458800000).getFullYear();
-  const currentDate = new Date(1703458800000);
+  // const currentYear = new Date(1703458800000).getFullYear();
+  // const currentDate = new Date(1703458800000);
   
 
   let iconUrl = '/leaflet/images/bluehome.png';
   // let iconRetinaUrl = '/images/tree-marker-icon-2x.png';
   // convert to data this timestamp 1703437200
-  const homes = newData?.map((house) => {
+  const homes = data?.map((house) => {
     const { id, lat, lon, indirizzo, foglio, particella, note} = house;
     return {
       id,
@@ -67,34 +63,16 @@ export default function Home() {
       note,
     }
   })
-
-  const destinations = data?.destinations?.map((destination) => {
-    const { arrival, departure } = destination;
+  console.log(homes)
   
-    const arrivalDate = new Date(arrival);
-    const departureDate = new Date(departure);
-       
-    arrivalDate.setFullYear(currentYear);
-    departureDate.setFullYear(currentYear);
+  // TODO: get user location 
+  // useEffect(() => {
+  //   navigator.geolocation.getCurrentPosition(position => {
+  //       const { latitude, longitude } = position.coords;
+  //       setInitialPosition([latitude, longitude]);
   
-    return {
-      ...destination,
-      arrival: arrivalDate.getTime(),
-      departure:  departureDate.getTime(),
-    }
-  });
-
-  console.log(data)
-  console.log(newData)
-  const [DEFAULT_CENTER, setInitialPosition] = useState([41.3549,  14.3705]);
-  
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(position => {
-        const { latitude, longitude } = position.coords;
-        setInitialPosition([latitude, longitude]);
-  
-    });
-  }, []);
+  //   });
+  // }, []);
 
   return (
     <Layout>
@@ -116,24 +94,12 @@ export default function Home() {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   // attribution="&copy; <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors"
                 />
-                  {destinations?.map(({ id, arrival, departure, location, city, region }) => {
+                  {homes?.map(({ id, lat, lon, indirizzo, foglio, particella, note }) => {
 
-                    const arrivalDate = new Date(arrival);
-                    const arrivalHours = arrivalDate.getHours()
-                    const arrivalMinutes = arrivalDate.getMinutes()
-                    const arrivalTime = `${arrivalHours}:${arrivalMinutes}`;
-
-                    const departureDate = new Date(departure);
-                    const departureHours = departureDate.getHours()
-                    const departureMinutes = departureDate.getMinutes()
-                    const departureTime = `${departureHours}:${departureMinutes}`;
-
-                    const payedRent = currentDate.getTime() - departureDate.getTime() > 0;
-                    const noPayedRent = currentDate.getTime() - arrivalDate.getTime() > 0 && !payedRent;
                     return (
                       <Marker 
                         key={id} 
-                        position={[location.lat, location.lng]}
+                        position={[lat, lon]}
                         icon={Leaflet.icon({
                           iconUrl: 'leaflet/images/bluehome.png',
                           // iconUrl: payedRent ? '/leaflet/images/green_arrow_up.png' : '/leaflet/images/red_arrow_down.png',
@@ -141,12 +107,13 @@ export default function Home() {
                         })}
                       >
                         <Popup>
-                          <img src={payedRent ? "leaflet/images/green_arrow_up.png" : "leaflet/images/red_arrow_down.jpg"} alt="green_arrow_up" width="50" height="60" />
-                          <strong>Location:</strong> { city }, { region }
+                          <strong>Indirizzo:</strong> { indirizzo }
                           <br />
-                          <strong>Arrival:</strong> { arrivalDate.toDateString() } @ { arrivalTime }
+                          <strong>Foglio:</strong> { foglio }
                           <br />
-                          <strong>Departure:</strong> { arrivalDate.toDateString() } @ { departureTime }
+                          <strong>Particella:</strong> { particella }
+                          <br />
+                          <strong>Note:</strong> { note }
                         </Popup>
                       </Marker>
                     )
@@ -163,7 +130,7 @@ export default function Home() {
           </Stack>
           <Stack  direction="row" useFlexGap flexWrap="wrap" spacing={2} justifyContent={'center'}>
             {
-              destinations?.map(({ id, arrival, departure, location, city, region }) => {
+              homes?.map(({ id, lat, lon, indirizzo, foglio, particella, note }) => {
                 return (
                   <Card sx={{ maxWidth: 245 }} key={id}>
                   <CardActionArea>
@@ -175,13 +142,13 @@ export default function Home() {
                     />
                     <CardContent>
                       <Typography gutterBottom variant="h5" component="div">
-                        {city}
+                        {indirizzo}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Foglio: {arrival}
+                        Foglio: {foglio}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Particella: {region}
+                        Particella: {particella}
                       </Typography>
                     </CardContent>
                   </CardActionArea>
@@ -192,7 +159,7 @@ export default function Home() {
                          NOTES
                       </Typography>
                       <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-                        NOTE NON DISPONIBILI
+                        { note }
                       </Typography>
                     </CardContent>
                     <CardActions>
