@@ -18,12 +18,19 @@ import { styled } from '@mui/material/styles';
 
 import styles from '@styles/Home.module.scss';
 
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+const Item = styled(Paper)(({ theme, bgColor, txtColor }) => ({
+  backgroundColor: bgColor,
   ...theme.typography.body2,
   padding: theme.spacing(1),
+  display: 'flex',
   textAlign: 'center',
+  justifyContent: 'center',
+  alignItems: 'center',
   color: theme.palette.text.secondary,
+  width: '100px',
+  height: '100px',
+  fontSize: '22px',
+  color: txtColor,
 }));
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
@@ -42,15 +49,9 @@ export default function Home() {
     setData(jsonData);
   }, [jsonData]);
 
-  // const currentYear = new Date(Date.now()).getFullYear();
-  // const currentDate = new Date(Date.now());
-  // const currentYear = new Date(1703458800000).getFullYear();
-  // const currentDate = new Date(1703458800000);
-  
 
   let iconUrl = '/leaflet/images/bluehome.png';
-  // let iconRetinaUrl = '/images/tree-marker-icon-2x.png';
-  // convert to data this timestamp 1703437200
+
   const homes = data?.map((house) => {
     const { id, lat, lon, indirizzo, foglio, particella, note} = house;
     return {
@@ -102,7 +103,6 @@ export default function Home() {
                         position={[lat, lon]}
                         icon={Leaflet.icon({
                           iconUrl: 'leaflet/images/bluehome.png',
-                          // iconUrl: payedRent ? '/leaflet/images/green_arrow_up.png' : '/leaflet/images/red_arrow_down.png',
                           iconSize: [41, 41],
                         })}
                       >
@@ -122,11 +122,11 @@ export default function Home() {
             )}
           </Map>
 
-          <Stack direction="row" spacing={2} justifyContent={'center'}>
-            <Item>23</Item>
-            <Item>12</Item>
-            <Item>1</Item>
-            <Item>99</Item>
+          <Stack direction="row" spacing={2} justifyContent={'center'} my={2}>
+            <Item bgColor="green" txtColor="white">23</Item>
+            <Item bgColor="green" txtColor="white">12</Item>
+            <Item bgColor="yellow" txtColor="black">1</Item>
+            <Item bgColor="red" txtColor="white">99</Item>
           </Stack>
           <Stack  direction="row" useFlexGap flexWrap="wrap" spacing={2} justifyContent={'center'}>
             {
